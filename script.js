@@ -22,9 +22,29 @@ function clearCanvas() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function drawSnake() {
-    ctx.fillStyle = "#2ecc71";
-    snake.forEach(part => ctx.fillRect(part.x, part.y, scale, scale));
+function draw() {
+    ctx.fillStyle = "#c7d1b3";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#4a5343";
+    ctx.beginPath();
+    ctx.arc(food.x + box/2, food.y + box/2, box/2 - 2, 0, 2 * Math.PI);
+    ctx.fill();
+
+    for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = "#4a5343"; 
+        ctx.beginPath();
+        ctx.arc(snake[i].x + box/2, snake[i].y + box/2, box/2 - 1, 0, 2 * Math.PI);
+        ctx.fill();
+
+        if (i === 0) {
+            ctx.fillStyle = "#c7d1b3"; 
+            ctx.beginPath();
+            ctx.arc(snake[i].x + box/2, snake[i].y + box/3, 2, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
+}
 }
 
 function moveSnake() {
