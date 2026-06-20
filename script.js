@@ -2,7 +2,66 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const scale = 20;
 
-let snake = [{x: 200, y: 200}];
+// Enhanced Snake Structure with metadata
+const snake = {
+    segments: [{x: 200, y: 200}],  // Array of segment positions
+    color: "#4a5343",               // Body color
+    headColor: "#00d4ff",            // Head color
+    length: 1,                       // Current length
+    
+    // Get head position
+    getHead() {
+        return this.segments[0];
+    },
+    
+    // Get tail position
+    getTail() {
+        return this.segments[this.segments.length - 1];
+    },
+    
+    // Add new head
+    addHead(x, y) {
+        this.segments.unshift({x, y});
+        this.length++;
+    },
+    
+    // Remove tail
+    removeTail() {
+        if (this.segments.length > 1) {
+            this.segments.pop();
+            this.length--;
+        }
+    },
+    
+    // Grow (eat food)
+    grow(x, y) {
+        this.addHead(x, y);
+    },
+    
+    // Move (add head and remove tail)
+    move(x, y) {
+        this.addHead(x, y);
+        this.removeTail();
+    },
+    
+    // Check self collision
+    checkSelfCollision() {
+        const head = this.getHead();
+        for (let i = 4; i < this.segments.length; i++) {
+            if (this.segments[i].x === head.x && this.segments[i].y === head.y) {
+                return true;
+            }
+        }
+        return false;
+    },
+    
+    // Reset snake
+    reset() {
+        this.segments = [{x: 200, y: 200}];
+        this.length = 1;
+    }
+};
+
 let food = {x: 100, y: 100};
 let dx = scale;
 let dy = 0;
@@ -29,12 +88,25 @@ function togglePause() {
     }
 }
 
+function resetGame() {
+    gameRunning = false;
+    gamePaused = false;
+    dx = scale;
+    dy = 0;
+    score = 0;
+    snake.reset();
+    document.getElementById("startBtn").disabled = false;
+    document.getElementById("pauseBtn").disabled = true;
+    document.getElementById("pauseBtn").textContent = "Pause";
+    document.getElementById("score").textContent = `Score: ${score}`;
+}
+
 function endGame() {
     gameRunning = false;
     document.getElementById("startBtn").disabled = false;
     document.getElementById("pauseBtn").disabled = true;
     document.getElementById("pauseBtn").textContent = "Pause";
-    alert(`Game Over! Final Score: ${score}`);
+    alert(`Game Over! Final Score: ${score}\nSnake Length: ${snake.length}`);
 }
 
 function main() {
@@ -60,40 +132,65 @@ function clearCanvas() {
 }
 
 function drawFood() {
-    ctx.fillStyle = "#4a5343";
+    ctx.fillStyle = "#ff6b6b";
     ctx.beginPath();
     ctx.arc(food.x + scale / 2, food.y + scale / 2, scale / 2 - 2, 0, 2 * Math.PI);
     ctx.fill();
+    
+    // Food outline
+    ctx.strokeStyle = "#ff4444";
+    ctx.lineWidth = 2;
+    ctx.stroke();
 }
 
 function drawSnake() {
-    snake.forEach((part, index) => {
-        ctx.fillStyle = "#4a5343";
-        ctx.beginPath();
-        ctx.arc(part.x + scale / 2, part.y + scale / 2, scale / 2 - 1, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // Draw eye on head
+    snake.segments.forEach((part, index) => {
         if (index === 0) {
-            ctx.fillStyle = "#c7d1b3";
+            // Draw head
+            ctx.fillStyle = snake.headColor;
+            ctx.beginPath();
+            ctx.arc(part.x + scale / 2, part.y + scale / 2, scale / 2 - 1, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Head outline
+            ctx.strokeStyle = "#0099cc";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw eye
+            ctx.fillStyle = "#000";
             ctx.beginPath();
             ctx.arc(part.x + scale / 2, part.y + scale / 3, 2, 0, 2 * Math.PI);
             ctx.fill();
+        } else {
+            // Draw body segments with gradient effect
+            ctx.fillStyle = snake.color;
+            ctx.beginPath();
+            ctx.arc(part.x + scale / 2, part.y + scale / 2, scale / 2 - 1, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Body outline
+            ctx.strokeStyle = "#2a3a33";
+            ctx.lineWidth = 1;
+            ctx.stroke();
         }
     });
 }
 
 function moveSnake() {
-    const head = {x: snake[0].x + dx, y: snake[0].y + dy};
-    snake.unshift(head);
-
-    const hasEatenFood = snake[0].x === food.x && snake[0].y === food.y;
+    const head = snake.getHead();
+    const newHeadX = head.x + dx;
+    const newHeadY = head.y + dy;
+    
+    const hasEatenFood = newHeadX === food.x && newHeadY === food.y;
+    
     if (hasEatenFood) {
+        snake.grow(newHeadX, newHeadY);
         score += 10;
-        document.getElementById("score").textContent = `Score: ${score}`;
+        document.getElementById("score").textContent = `Score: ${score} | Length: ${snake.length}`;
         generateFood();
     } else {
-        snake.pop();
+        snake.move(newHeadX, newHeadY);
     }
 }
 
@@ -103,18 +200,18 @@ function generateFood() {
 }
 
 function gameOver() {
-    // Check if snake hits itself
-    for (let i = 4; i < snake.length; i++) {
-        if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) {
-            return true;
-        }
+    const head = snake.getHead();
+    
+    // Check self collision
+    if (snake.checkSelfCollision()) {
+        return true;
     }
 
-    // Check if snake hits walls
-    const hitLeftWall = snake[0].x < 0;
-    const hitRightWall = snake[0].x >= canvas.width;
-    const hitTopWall = snake[0].y < 0;
-    const hitBottomWall = snake[0].y >= canvas.height;
+    // Check wall collision
+    const hitLeftWall = head.x < 0;
+    const hitRightWall = head.x >= canvas.width;
+    const hitTopWall = head.y < 0;
+    const hitBottomWall = head.y >= canvas.height;
 
     return hitLeftWall || hitRightWall || hitTopWall || hitBottomWall;
 }
