@@ -2,12 +2,11 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const scale = 20;
 
-// Enhanced Snake Structure with animation
+// Enhanced Snake Structure with smooth animation
 const snake = {
     segments: [{x: 200, y: 200}],
-    color: "#4a5343",
-    headColor: "#00d4ff",
-    segmentColors: ["#00d4ff", "#00a8cc", "#008899"],
+    headColor: "#00ff00",
+    bodyColor: "#00cc00",
     length: 1,
     
     getHead() {
@@ -55,7 +54,7 @@ const snake = {
     }
 };
 
-let food = {x: 100, y: 100, pulseSize: 0};
+let food = {x: 100, y: 100};
 let nextDx = scale;
 let nextDy = 0;
 let dx = scale;
@@ -208,15 +207,12 @@ function main() {
 }
 
 function clearCanvas() {
-    // Gradient background
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    gradient.addColorStop(0, "#0f0f1e");
-    gradient.addColorStop(1, "#1a1a2e");
-    ctx.fillStyle = gradient;
+    // Dark background
+    ctx.fillStyle = "#0a0a0f";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Grid pattern
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+    ctx.strokeStyle = "rgba(0, 255, 0, 0.05)";
     ctx.lineWidth = 1;
     for (let i = 0; i <= canvas.width; i += scale) {
         ctx.beginPath();
@@ -233,113 +229,106 @@ function clearCanvas() {
 
 function drawFood() {
     // Pulsing animation
-    const pulse = Math.sin(animationFrame * 0.1) * 2 + 3;
+    const pulse = Math.sin(animationFrame * 0.15) * 3 + 5;
     
-    // Food glow
+    // Red food glow
     const glowGradient = ctx.createRadialGradient(
         food.x + scale / 2, food.y + scale / 2, 0,
         food.x + scale / 2, food.y + scale / 2, scale / 2 + pulse
     );
-    glowGradient.addColorStop(0, "rgba(255, 107, 107, 0.5)");
-    glowGradient.addColorStop(1, "rgba(255, 107, 107, 0)");
+    glowGradient.addColorStop(0, "rgba(255, 0, 0, 0.6)");
+    glowGradient.addColorStop(0.7, "rgba(255, 0, 0, 0.3)");
+    glowGradient.addColorStop(1, "rgba(255, 0, 0, 0)");
     ctx.fillStyle = glowGradient;
     ctx.fillRect(
-        food.x - scale / 2, food.y - scale / 2,
-        scale * 2, scale * 2
+        food.x - scale / 2 - pulse, food.y - scale / 2 - pulse,
+        scale * 2 + pulse * 2, scale * 2 + pulse * 2
     );
     
-    // Food body with gradient
+    // Red food body with gradient
     const foodGradient = ctx.createRadialGradient(
-        food.x + scale / 2, food.y + scale / 2, 0,
+        food.x + scale / 2 - 2, food.y + scale / 2 - 2, 0,
         food.x + scale / 2, food.y + scale / 2, scale / 2
     );
-    foodGradient.addColorStop(0, "#ff8888");
-    foodGradient.addColorStop(1, "#ff6b6b");
+    foodGradient.addColorStop(0, "#ff3333");
+    foodGradient.addColorStop(1, "#cc0000");
     ctx.fillStyle = foodGradient;
     ctx.beginPath();
     ctx.arc(food.x + scale / 2, food.y + scale / 2, scale / 2 - 1, 0, 2 * Math.PI);
     ctx.fill();
     
-    // Food outline
-    ctx.strokeStyle = "#ff4444";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    
-    // Shiny effect
-    ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+    // Food shine
+    ctx.fillStyle = "rgba(255, 100, 100, 0.5)";
     ctx.beginPath();
-    ctx.arc(food.x + scale / 2 - 3, food.y + scale / 2 - 3, 2, 0, 2 * Math.PI);
+    ctx.arc(food.x + scale / 2 - 4, food.y + scale / 2 - 4, 2.5, 0, 2 * Math.PI);
     ctx.fill();
 }
 
 function drawSnake() {
     snake.segments.forEach((part, index) => {
-        // Smooth shadow effect
-        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-        ctx.beginPath();
-        ctx.arc(part.x + scale / 2 + 2, part.y + scale / 2 + 2, scale / 2, 0, 2 * Math.PI);
-        ctx.fill();
-        
         if (index === 0) {
-            // Head - Bright color with glow
-            const headGlow = ctx.createRadialGradient(
-                part.x + scale / 2, part.y + scale / 2, 0,
-                part.x + scale / 2, part.y + scale / 2, scale / 2 + 3
-            );
-            headGlow.addColorStop(0, "rgba(0, 212, 255, 0.6)");
-            headGlow.addColorStop(1, "rgba(0, 212, 255, 0)");
-            ctx.fillStyle = headGlow;
-            ctx.fillRect(
-                part.x - scale / 2, part.y - scale / 2,
-                scale * 2, scale * 2
-            );
-            
-            // Head body with gradient
-            const headGradient = ctx.createRadialGradient(
-                part.x + scale / 2, part.y + scale / 2, 0,
-                part.x + scale / 2, part.y + scale / 2, scale / 2
-            );
-            headGradient.addColorStop(0, "#00d4ff");
-            headGradient.addColorStop(1, "#0099cc");
-            ctx.fillStyle = headGradient;
+            // HEAD - Bright green with larger size
+            ctx.fillStyle = "#00ff00";
             ctx.beginPath();
-            ctx.arc(part.x + scale / 2, part.y + scale / 2, scale / 2 - 1, 0, 2 * Math.PI);
+            ctx.arc(part.x + scale / 2, part.y + scale / 2, scale / 2 + 1, 0, 2 * Math.PI);
             ctx.fill();
             
-            // Head outline
-            ctx.strokeStyle = "#0066aa";
+            // Head glow effect
+            ctx.strokeStyle = "rgba(0, 255, 0, 0.5)";
             ctx.lineWidth = 2;
             ctx.stroke();
             
-            // Eye
+            // Eyes based on direction
             ctx.fillStyle = "#000";
-            ctx.beginPath();
-            ctx.arc(part.x + scale / 2, part.y + scale / 3, 2.5, 0, 2 * Math.PI);
-            ctx.fill();
-            
-            // Eye shine
-            ctx.fillStyle = "#fff";
-            ctx.beginPath();
-            ctx.arc(part.x + scale / 2 + 1, part.y + scale / 3 - 1, 1, 0, 2 * Math.PI);
-            ctx.fill();
+            if (dx > 0) { // Moving right
+                ctx.beginPath();
+                ctx.arc(part.x + scale / 2 + 3, part.y + scale / 2 - 3, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(part.x + scale / 2 + 3, part.y + scale / 2 + 3, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+            } else if (dx < 0) { // Moving left
+                ctx.beginPath();
+                ctx.arc(part.x + scale / 2 - 3, part.y + scale / 2 - 3, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(part.x + scale / 2 - 3, part.y + scale / 2 + 3, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+            } else if (dy > 0) { // Moving down
+                ctx.beginPath();
+                ctx.arc(part.x + scale / 2 - 3, part.y + scale / 2 + 3, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(part.x + scale / 2 + 3, part.y + scale / 2 + 3, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+            } else if (dy < 0) { // Moving up
+                ctx.beginPath();
+                ctx.arc(part.x + scale / 2 - 3, part.y + scale / 2 - 3, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(part.x + scale / 2 + 3, part.y + scale / 2 - 3, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
         } else {
-            // Body segments with gradient color
-            const colorIndex = Math.min(index, snake.segmentColors.length - 1);
-            const segmentColor = snake.segmentColors[colorIndex];
+            // BODY - Gradient from bright to dark green based on position
+            const colorIntensity = Math.max(0.3, 1 - (index / snake.segments.length) * 0.7);
+            const greenValue = Math.floor(200 * colorIntensity);
             
+            // Body with gradient
             const bodyGradient = ctx.createRadialGradient(
-                part.x + scale / 2, part.y + scale / 2, 0,
+                part.x + scale / 2 - 1, part.y + scale / 2 - 1, 1,
                 part.x + scale / 2, part.y + scale / 2, scale / 2
             );
-            bodyGradient.addColorStop(0, segmentColor);
-            bodyGradient.addColorStop(1, "#004466");
+            bodyGradient.addColorStop(0, `rgb(100, ${greenValue}, 50)`);
+            bodyGradient.addColorStop(1, `rgb(20, ${Math.floor(greenValue * 0.6)}, 10)`);
             ctx.fillStyle = bodyGradient;
+            
             ctx.beginPath();
-            ctx.arc(part.x + scale / 2, part.y + scale / 2, scale / 2 - 1, 0, 2 * Math.PI);
+            ctx.arc(part.x + scale / 2, part.y + scale / 2, scale / 2 - 0.5, 0, 2 * Math.PI);
             ctx.fill();
             
             // Body outline
-            ctx.strokeStyle = "#003344";
+            ctx.strokeStyle = `rgba(0, 255, 0, ${0.3 * colorIntensity})`;
             ctx.lineWidth = 1;
             ctx.stroke();
         }
