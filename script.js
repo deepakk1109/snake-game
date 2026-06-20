@@ -74,6 +74,7 @@ function startGame() {
         document.getElementById("pauseBtn").disabled = false;
         document.getElementById("pauseBtn").textContent = "Pause";
         document.getElementById("resetBtn").disabled = false;
+        document.getElementById("resetBtn").textContent = "Pause Game";
         generateFood();
         main();
     }
@@ -83,13 +84,46 @@ function togglePause() {
     gamePaused = !gamePaused;
     if (gamePaused) {
         document.getElementById("pauseBtn").textContent = "Resume";
+        document.getElementById("resetBtn").textContent = "New Game";
     } else {
         document.getElementById("pauseBtn").textContent = "Pause";
+        document.getElementById("resetBtn").textContent = "Pause Game";
         main();
     }
 }
 
 function resetGame() {
+    if (gameRunning) {
+        // If game is running, pause it
+        gameRunning = false;
+        gamePaused = true;
+        document.getElementById("pauseBtn").textContent = "Resume";
+        document.getElementById("resetBtn").textContent = "New Game";
+    } else if (gamePaused) {
+        // If game is paused, start new game
+        gameRunning = false;
+        gamePaused = false;
+        nextDx = scale;
+        nextDy = 0;
+        dx = scale;
+        dy = 0;
+        score = 0;
+        animationFrame = 0;
+        snake.reset();
+        document.getElementById("startBtn").disabled = false;
+        document.getElementById("startBtn").textContent = "Start Game";
+        document.getElementById("pauseBtn").disabled = true;
+        document.getElementById("pauseBtn").textContent = "Pause";
+        document.getElementById("resetBtn").disabled = true;
+        document.getElementById("resetBtn").textContent = "Pause Game";
+        document.getElementById("score").textContent = `Score: ${score} | Length: ${snake.length}`;
+        clearCanvas();
+        drawFood();
+        drawSnake();
+    }
+}
+
+function playAgain() {
     gameRunning = false;
     gamePaused = false;
     nextDx = scale;
@@ -103,10 +137,18 @@ function resetGame() {
     document.getElementById("startBtn").textContent = "Start Game";
     document.getElementById("pauseBtn").disabled = true;
     document.getElementById("pauseBtn").textContent = "Pause";
+    document.getElementById("resetBtn").disabled = true;
+    document.getElementById("resetBtn").textContent = "Pause Game";
     document.getElementById("score").textContent = `Score: ${score} | Length: ${snake.length}`;
     clearCanvas();
     drawFood();
     drawSnake();
+    
+    // Remove any existing modal
+    const existingModal = document.querySelector('.game-over-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
 }
 
 function endGame() {
@@ -116,6 +158,8 @@ function endGame() {
     document.getElementById("startBtn").textContent = "Play Again";
     document.getElementById("pauseBtn").disabled = true;
     document.getElementById("pauseBtn").textContent = "Pause";
+    document.getElementById("resetBtn").disabled = true;
+    document.getElementById("resetBtn").textContent = "Pause Game";
     
     showGameOverModal();
 }
@@ -128,7 +172,10 @@ function showGameOverModal() {
             <h2>🎮 Game Over! 🎮</h2>
             <p>Final Score: <span class="score-value">${score}</span></p>
             <p>Snake Length: <span class="length-value">${snake.length}</span></p>
-            <button class="play-again-btn" onclick="location.reload()">🔄 Play Again</button>
+            <div class="modal-buttons">
+                <button class="play-again-btn" onclick="playAgain()">🔄 Play Again</button>
+                <button class="menu-btn" onclick="location.reload()">🏠 Main Menu</button>
+            </div>
         </div>
     `;
     document.body.appendChild(modal);
